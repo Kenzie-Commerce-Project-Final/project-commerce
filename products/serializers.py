@@ -1,10 +1,14 @@
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
 from .models import Product
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    def create(self, validated_data):
+    def create(self, validated_data: dict) -> Product:
+
+        for product in validated_data:
+            if product.stock == 0:
+                product.is_available = False
+
         return Product.objects.create(**validated_data)
 
     def update(self, instance: Product, validated_data: dict) -> Product:
