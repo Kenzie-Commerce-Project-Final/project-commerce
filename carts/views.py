@@ -6,3 +6,6 @@ from carts.serializers import CartSerializer
 class CartView(ListCreateAPIView):
     queryset = Cart.objects.all()
     serializer_class = CartSerializer
+
+    def perform_create(self, serializer):
+        return serializer.save()

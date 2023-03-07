@@ -18,4 +18,8 @@ class CartSerializer(serializers.ModelField):
             "products",
             "user",
         ]
+        read_only_fields = ["id", "created_at"]
         extra_kwargs = {"items_count": {"min_value": 0}}
+
+    def create(self, validated_data: dict) -> Cart:
+        return validated_data.save()
