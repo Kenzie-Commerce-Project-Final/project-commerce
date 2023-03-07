@@ -14,6 +14,7 @@ class Cart(models.Model):
     total_price = models.DecimalField(max_digits=8, decimal_places=2)
     status = models.CharField(max_length=50, choices=Status.choices, default=Status.REQUEST_MADE)
     crated_at = models.DateTimeField(auto_now_add=True)
+    products = models.ManyToManyField("products.Product", related_name="cart_products")
     user = models.ForeignKey(
         "users.User",
         on_delete=models.CASCADE,
