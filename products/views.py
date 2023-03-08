@@ -1,26 +1,23 @@
 from .models import Product
 from .serializers import ProductSerializer
 from rest_framework import generics
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.permissions import IsAdminUser
+from categories.models import Category
 from .permissions import MyCustomPermissions
 
 
-class ProductView(generics.CreateAPIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [MyCustomPermissions]
+class ProductView(generics.ListCreateAPIView):
+    # permission_classes = [MyCustomPermissions]
 
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
-
-class ProductView(generics.ListAPIView):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
+    def perform_create(self, serializer):
+        return serializer.save(user=self.request.user)
 
 
 class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [MyCustomPermissions]
+    permission_classes = [IsAdminUser]
 
     queryset = Product.objects.all()
     serializer_class = ProductSerializer

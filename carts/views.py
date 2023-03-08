@@ -1,18 +1,24 @@
-from rest_framework.generics import ListCreateAPIView
-from carts.models import Cart
-from carts.serializers import CartSerializer
-from users.models import User
+import django
+from rest_framework.generics import ListAPIView, CreateAPIView, DestroyAPIView
+from rest_framework.permissions import IsAuthenticated
+from carts.models import Cart, Status
+from carts.serializers import CartSerializer, CartProductSerializer
 
 
-class CartView(ListCreateAPIView):
-    queryset = Cart.objects.all()
+class CartView(ListAPIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = CartSerializer
 
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return Cart.objects.all()
+
+        return Cart.objects.filter(user=self.request.user, status=Status.REQUEST_MADE)
+
+
+class CartViewProduct(CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = CartProductSerializer
+
     def perform_create(self, serializer):
-
-        # import ipdb
-
-        user = User.objects.first()
-        # ipdb.set_trace()
-
-        return serializer.save(user=user)
+        return serializer.save(user=self.request.user)
