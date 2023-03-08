@@ -50,10 +50,19 @@ class CartProductSerializer(serializers.Serializer):
         user = validated_data.get("user")
         product = get_object_or_404(Product, id=validated_data.get("product_id"))
 
+        # product.stock = product.stock - 1
+        # product.save()
+
         cart = Cart.objects.filter(user=user, status=Status.REQUEST_MADE).first()
+        find_product = cart.products.filter(id=product.id).first()
+
+        if find_product:
+            cart.products.add(find_product)
 
         cart.products.add(product)
-
         cart.save()
+        # import ipdb
+
+        # ipdb.set_trace()
 
         return cart

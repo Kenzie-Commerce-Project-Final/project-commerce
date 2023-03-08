@@ -31,10 +31,3 @@ class ProductSerializer(serializers.ModelSerializer):
             "category",
             "user",
         ]
-
-
-class ProductCartSerializer(serializers.Serializer):
-    id = serializers.UUIDField()
-    name = serializers.CharField()
-    price = serializers.DecimalField()
-    amount = serializers.IntegerField()
