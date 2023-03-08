@@ -1,3 +1,4 @@
+from pyexpat import model
 from django.db import models
 import uuid
 
@@ -16,9 +17,22 @@ class Cart(models.Model):
         max_length=50, choices=Status.choices, default=Status.REQUEST_MADE
     )
     crated_at = models.DateTimeField(auto_now_add=True)
-    products = models.ManyToManyField("products.Product", related_name="cart_products")
+    cart_product = models.ManyToManyField(
+        "products.Product", through="carts.CartProduct", related_name="products_cart"
+    )
     user = models.ForeignKey(
         "users.User",
         on_delete=models.CASCADE,
         related_name="carts",
     )
+
+
+class CartProduct(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    product = models.ForeignKey(
+        "products.Product", on_delete=models.CASCADE, related_name="product_carts"
+    )
+    cart = models.ForeignKey(
+        "carts.Cart", on_delete=models.CASCADE, related_name="cart_products"
+    )
+    amount = models.IntegerField()
