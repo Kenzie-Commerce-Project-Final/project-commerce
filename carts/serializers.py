@@ -1,12 +1,8 @@
-from rest_framework import serializers
+from rest_framework import serializers, validators
 from carts.models import Cart, Status
 
 
-class CartSerializer(serializers.ModelField):
-    status = serializers.ChoiceField(
-        choices=Status.choices, default=Status.REQUEST_MADE
-    )
-
+class CartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cart
         fields = [
@@ -16,10 +12,16 @@ class CartSerializer(serializers.ModelField):
             "status",
             "crated_at",
             "products",
-            "user",
+            "user_id",
         ]
-        read_only_fields = ["id", "created_at"]
+        read_only_fields = ["id", "total_price", "created_at", "products", "user_id"]
         extra_kwargs = {"items_count": {"min_value": 0}}
 
     def create(self, validated_data: dict) -> Cart:
-        return validated_data.save()
+        user = validated_data.get("user")
+        find_cart = Cart.objects.filter(status=Status.REQUEST_MADE, user=user).first()
+
+        if find_cart and find_cart.status == Status.REQUEST_MADE:
+            raise validators.ValidationError("There is an open cart.")
+
+        return Cart.objects.create(**validated_data)

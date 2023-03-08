@@ -1,6 +1,7 @@
 from rest_framework.generics import ListCreateAPIView
 from carts.models import Cart
 from carts.serializers import CartSerializer
+from users.models import User
 
 
 class CartView(ListCreateAPIView):
@@ -8,4 +9,10 @@ class CartView(ListCreateAPIView):
     serializer_class = CartSerializer
 
     def perform_create(self, serializer):
-        return serializer.save()
+
+        # import ipdb
+
+        user = User.objects.first()
+        # ipdb.set_trace()
+
+        return serializer.save(user=user)
