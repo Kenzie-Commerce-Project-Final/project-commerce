@@ -1,12 +1,11 @@
 from rest_framework import permissions
-from .models import Product
-from rest_framework.views import View, Request
+from rest_framework.views import Request
 
 
-class MyCustomPermissions(permissions.BasePermission):
+class IsAdmPermissions(permissions.BasePermission):
     def has_permission(self, request: Request):
-        return bool(
+        return (
             request.method in permissions.SAFE_METHODS
             or request.user.is_authenticated
-            and request.user.is_staff
+            and request.user.is_superuser
         )
