@@ -1,7 +1,7 @@
 from .models import Product
 from .serializers import ProductSerializer
 from rest_framework import generics
-from .permissions import MyCustomPermissions, IsPermissionPatchDelete
+from .permissions import MyCustomPermissions
 
 
 class ProductView(generics.ListCreateAPIView):
@@ -28,17 +28,9 @@ class ProductView(generics.ListCreateAPIView):
         return serializer.save(user=self.request.user)
 
 
-class ProductDetailView(generics.RetrieveAPIView):
+class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [MyCustomPermissions]
 
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     lookup_url_kwarg = "id"
-
-
-class ProductDetailUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
-    # permission_classes = [MyCustomPermissions]
-
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-    lookup_url_kwarg = "deletePatch_id"
