@@ -7,6 +7,8 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from .permissions import IsAdmOrUserCommon
 from products.models import Product
 from products.serializers import ProductSerializer
+from carts.models import Cart
+from carts.serializers import CartSerializer
 
 # Create your views here.
 
@@ -34,3 +36,20 @@ class SellerProductsView(generics.ListAPIView):
         products = Product.objects.filter(user_id=pk)
         serializer = ProductSerializer(products, many=True)
         return Response(serializer.data)
+
+
+class PurchaseHistoryView(generics.ListAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAdmOrUserCommon]
+
+    queryset = Cart.objects.none()
+    http_method_names = ["get"]
+
+    def list(self, request, pk):
+        product = Cart.objects.filter(user_id=pk)
+        serializer = CartSerializer(product, many=True)
+
+        for products in serializer.data:
+            print(products["status"])
+            if products["status"] == "CONCLUÍDO":
+                return Response(products)

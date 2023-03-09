@@ -7,4 +7,5 @@ urlpatterns = [
     path("login/", jwt_views.TokenObtainPairView.as_view()),
     path("<str:pk>/", users_views.UserDetailView.as_view()),
     path("<str:pk>/products/", users_views.SellerProductsView().as_view()),
+    path("<str:pk>/purchase_history/", users_views.PurchaseHistoryView().as_view()),
 ]
