@@ -4,11 +4,13 @@ from rest_framework.generics import (
     UpdateAPIView,
     DestroyAPIView,
 )
+from rest_framework.views import APIView, Request, Response, status
 from rest_framework.permissions import IsAuthenticated
 from carts.models import Cart, CartProduct, Status
 from carts.serializers import CartSerializer, CartProductSerializer
 from utils.cart.count_items import count_items
 from utils.cart.sum_total_price import sum_total_price
+from rest_framework.validators import ValidationError
 
 
 class CartView(ListAPIView):
@@ -58,3 +60,31 @@ class CartViewProductById(UpdateAPIView, DestroyAPIView):
         cart.items_count = count_items(cart)
         cart.total_price = sum_total_price(cart)
         cart.save()
+
+
+class CartViewCheckout(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        carts = Cart.objects.filter(user=user, status=Status.PENDING)
+        for cart in carts:
+            carts_products = CartProduct.objects.filter(cart=cart)
+
+            for cart_product in carts_products:
+                if not cart_product.product.is_available:
+                    raise ValidationError("Product is not available.")
+
+                if cart_product.product.stock <= cart_product.amount:
+                    raise ValidationError(
+                        f"Product quantity exceeded inventory, inventory available {cart_product.product.stock}."
+                    )
+
+                cart_product.product.stock = (
+                    cart_product.product.stock - cart_product.amount
+                )
+                cart_product.product.save()
+
+            cart.status = Status.REQUEST_MADE
+            cart.save()
+        return Response({"message": "Order placed."}, status.HTTP_201_CREATED)
