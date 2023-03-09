@@ -16,10 +16,14 @@ class CartSerializer(serializers.ModelSerializer):
             "total_price",
             "status",
             "crated_at",
-            "carts_products",
+            "products",
             "user_id",
         ]
-        read_only_fields = ["id", "created_at", "user_id"]
+        read_only_fields = [
+            "id",
+            "created_at",
+            "user_id",
+        ]
         depth = 1
 
     def create(self, validated_data: dict) -> Cart:
@@ -52,9 +56,7 @@ class CartProductSerializer(serializers.ModelSerializer):
         carts_pending = Cart.objects.filter(user=user, status=Status.PENDING)
 
         cart = [
-            cart
-            for cart in carts_pending
-            if cart.carts_products.first().user == product.user
+            cart for cart in carts_pending if cart.products.first().user == product.user
         ]
 
         if not cart:

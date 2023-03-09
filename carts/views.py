@@ -40,13 +40,13 @@ class CartViewProductById(UpdateAPIView, DestroyAPIView):
     def get_object(self):
         queryset = self.filter_queryset(self.get_queryset())
         product_id = self.kwargs.get("product_id")
-        cart = queryset.get(user=self.request.user, carts_products=product_id)
+        cart = queryset.get(user=self.request.user, products=product_id)
         carts_products = CartProduct.objects.get(cart=cart, product=product_id)
         self.check_object_permissions(self.request, carts_products)
         return carts_products
 
     def perform_destroy(self, instance):
-        products_cart = instance.cart.carts_products.all()
+        products_cart = instance.cart.products.all()
 
         if len(products_cart) == 1:
             return instance.cart.delete()
