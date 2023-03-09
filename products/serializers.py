@@ -31,3 +31,16 @@ class ProductSerializer(serializers.ModelSerializer):
             "category",
             "user",
         ]
+
+
+class ProductOnCartSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = [
+            "id",
+            "name",
+            "price",
+            "is_available",
+            "category",
+            "user",
+        ]

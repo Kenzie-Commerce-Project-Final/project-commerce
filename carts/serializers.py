@@ -2,12 +2,14 @@ from rest_framework import serializers, validators
 from carts.models import Cart, CartProduct, Status
 from products.models import Product
 from django.shortcuts import get_object_or_404
-from utils import cart
 from utils.cart.count_items import count_items
 from utils.cart.sum_total_price import sum_total_price
+from products.serializers import ProductOnCartSerializer
 
 
 class CartSerializer(serializers.ModelSerializer):
+    products = ProductOnCartSerializer(many=True)
+
     class Meta:
         model = Cart
         fields = [
@@ -24,7 +26,6 @@ class CartSerializer(serializers.ModelSerializer):
             "created_at",
             "user_id",
         ]
-        depth = 1
 
     def create(self, validated_data: dict) -> Cart:
         return Cart.objects.create(**validated_data)
