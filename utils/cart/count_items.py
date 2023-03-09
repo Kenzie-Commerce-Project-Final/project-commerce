@@ -1,6 +1,6 @@
-from carts.models import Cart
+from carts.models import Cart, CartProduct
 
 
 def count_items(cart: Cart) -> int:
-    all_products = cart.cartproduct_set.all()
+    all_products = CartProduct.objects.filter(cart=cart)
     return sum([product.amount for product in all_products])

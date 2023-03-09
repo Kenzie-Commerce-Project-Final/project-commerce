@@ -2,6 +2,8 @@ from rest_framework import serializers, validators
 from carts.models import Cart, CartProduct, Status
 from products.models import Product
 from django.shortcuts import get_object_or_404
+from utils.cart.count_items import count_items
+from utils.cart.sum_total_price import sum_total_price
 
 
 class CartSerializer(serializers.ModelSerializer):
@@ -63,18 +65,29 @@ class CartProductSerializer(serializers.ModelSerializer):
             cart_products = CartProduct.objects.create(
                 cart=cart, product=product, amount=amount
             )
+            cart.items_count = count_items(cart)
+            cart.total_price = sum_total_price(cart)
+            cart.save()
             return cart_products
 
+        cart = cart[0]
+
         find_cart_product = CartProduct.objects.filter(
-            cart=cart[0], product=product
+            cart=cart, product=product
         ).first()
 
         if find_cart_product:
             find_cart_product.amount = amount
             find_cart_product.save()
+            cart.items_count = count_items(cart)
+            cart.total_price = sum_total_price(cart)
+            cart.save()
             return find_cart_product
 
         cart_products = CartProduct.objects.create(
-            cart=cart[0], product=product, amount=amount
+            cart=cart, product=product, amount=amount
         )
+        cart.items_count = count_items(cart)
+        cart.total_price = sum_total_price(cart)
+        cart.save()
         return cart_products
