@@ -7,6 +7,8 @@ from rest_framework.generics import (
 from rest_framework.permissions import IsAuthenticated
 from carts.models import Cart, CartProduct, Status
 from carts.serializers import CartSerializer, CartProductSerializer
+from utils.cart.count_items import count_items
+from utils.cart.sum_total_price import sum_total_price
 
 
 class CartView(ListAPIView):
@@ -44,5 +46,15 @@ class CartViewProductById(UpdateAPIView, DestroyAPIView):
         return carts_products
 
     def perform_destroy(self, instance):
+        products_cart = instance.cart.carts_products.all()
 
-        return
+        if len(products_cart) == 1:
+            return instance.cart.delete()
+
+        instance.delete()
+
+        cart = instance.cart
+
+        cart.items_count = count_items(cart)
+        cart.total_price = sum_total_price(cart)
+        cart.save()
