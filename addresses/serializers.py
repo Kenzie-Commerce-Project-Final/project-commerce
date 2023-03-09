@@ -11,3 +11,9 @@ class AddressSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data: dict) -> Address:
         return Address.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+        instance.save()
+        return instance
