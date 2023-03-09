@@ -2,6 +2,9 @@ from .models import Product
 from .serializers import ProductSerializer
 from rest_framework import generics
 from .permissions import MyCustomPermissions
+from django.shortcuts import get_object_or_404
+from rest_framework.response import Response
+from rest_framework import status
 
 
 class ProductView(generics.ListCreateAPIView):
@@ -34,3 +37,12 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     lookup_url_kwarg = "id"
+
+    def perform_destroy(self, instance):
+        product = get_object_or_404(Product, id=instance.id)
+
+        if product:
+            instance.is_available = False
+            instance.save()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
