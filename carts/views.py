@@ -7,6 +7,7 @@ from carts.serializers import CartSerializer, CartProductSerializer
 
 class CartView(ListAPIView):
     permission_classes = [IsAuthenticated]
+    queryset = Cart.objects.all()
     serializer_class = CartSerializer
 
     def get_queryset(self):

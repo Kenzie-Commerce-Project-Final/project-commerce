@@ -1,9 +1,9 @@
-from pyexpat import model
 from django.db import models
 import uuid
 
 
 class Status(models.TextChoices):
+    PENDING = "PENDENTE"
     REQUEST_MADE = ("PEDIDO REALIZADO",)
     IN_PROGRESS = ("EM ANDAMENTO",)
     DONE = "CONCLUÍDO"
@@ -14,11 +14,11 @@ class Cart(models.Model):
     items_count = models.IntegerField(default=0)
     total_price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     status = models.CharField(
-        max_length=50, choices=Status.choices, default=Status.REQUEST_MADE
+        max_length=50, choices=Status.choices, default=Status.PENDING
     )
     crated_at = models.DateTimeField(auto_now_add=True)
-    cart_product = models.ManyToManyField(
-        "products.Product", through="carts.CartProduct", related_name="products_cart"
+    carts_products = models.ManyToManyField(
+        "products.Product", through="carts.CartProduct"
     )
     user = models.ForeignKey(
         "users.User",
@@ -29,10 +29,6 @@ class Cart(models.Model):
 
 class CartProduct(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    product = models.ForeignKey(
-        "products.Product", on_delete=models.CASCADE, related_name="product_carts"
-    )
-    cart = models.ForeignKey(
-        "carts.Cart", on_delete=models.CASCADE, related_name="cart_products"
-    )
+    product = models.ForeignKey("products.Product", on_delete=models.CASCADE)
+    cart = models.ForeignKey("carts.Cart", on_delete=models.CASCADE)
     amount = models.IntegerField()

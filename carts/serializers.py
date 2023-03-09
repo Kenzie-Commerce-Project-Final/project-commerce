@@ -1,20 +1,10 @@
 from rest_framework import serializers, validators
-from carts.models import Cart, Status
+from carts.models import Cart, CartProduct, Status
 from products.models import Product
 from django.shortcuts import get_object_or_404
-from django.db.models import Sum
 
 
 class CartSerializer(serializers.ModelSerializer):
-    items_count = serializers.SerializerMethodField()
-    total_price = serializers.SerializerMethodField()
-
-    def get_items_count(self, obj):
-        return obj.products.all().count()
-
-    def get_total_price(self, obj):
-        return obj.products.all().aggregate(Sum("price")).get("price__sum")
-
     class Meta:
         model = Cart
         fields = [
@@ -23,46 +13,68 @@ class CartSerializer(serializers.ModelSerializer):
             "total_price",
             "status",
             "crated_at",
-            "products",
+            "carts_products",
             "user_id",
         ]
-        read_only_fields = ["id", "total_price", "created_at", "products", "user_id"]
-        extra_kwargs = {"items_count": {"min_value": 0}}
+        read_only_fields = ["id", "created_at", "user_id"]
+        depth = 1
 
     def create(self, validated_data: dict) -> Cart:
-        user = validated_data.get("user")
-        find_cart = Cart.objects.filter(status=Status.REQUEST_MADE, user=user).first()
-
-        if find_cart and find_cart.status == Status.REQUEST_MADE:
-            raise validators.ValidationError("There is an open cart.")
-
         return Cart.objects.create(**validated_data)
 
 
-class CartProductSerializer(serializers.Serializer):
-    product_id = serializers.UUIDField(write_only=True)
+class CartProductSerializer(serializers.ModelSerializer):
+    product_id = serializers.UUIDField()
     message = serializers.SerializerMethodField(read_only=True)
 
     def get_message(self, obj):
         return "Product added"
 
+    class Meta:
+        model = CartProduct
+        fields = ["id", "product_id", "amount", "message"]
+        extra_kwargs = {"amount": {"min_value": 1}}
+
     def create(self, validated_data):
         user = validated_data.get("user")
-        product = get_object_or_404(Product, id=validated_data.get("product_id"))
+        amount = validated_data.get("amount")
+        product_id = validated_data.get("product_id")
 
-        # product.stock = product.stock - 1
-        # product.save()
+        product = get_object_or_404(Product, id=product_id)
 
-        cart = Cart.objects.filter(user=user, status=Status.REQUEST_MADE).first()
-        find_product = cart.products.filter(id=product.id).first()
+        if not product.is_available:
+            raise validators.ValidationError("Product is not available.")
 
-        if find_product:
-            cart.products.add(find_product)
+        if product.stock < amount:
+            raise validators.ValidationError(
+                f"Product quantity exceeded inventory, inventory available {product.stock}."
+            )
 
-        cart.products.add(product)
-        cart.save()
-        # import ipdb
+        carts_pending = Cart.objects.filter(user=user, status=Status.PENDING)
 
-        # ipdb.set_trace()
+        cart = [
+            cart
+            for cart in carts_pending
+            if cart.carts_products.first().user == product.user
+        ]
 
-        return cart
+        if not cart:
+            cart = Cart.objects.create(user=user)
+            cart_products = CartProduct.objects.create(
+                cart=cart, product=product, amount=amount
+            )
+            return cart_products
+
+        find_cart_product = CartProduct.objects.filter(
+            cart=cart[0], product=product
+        ).first()
+
+        if find_cart_product:
+            find_cart_product.amount = amount
+            find_cart_product.save()
+            return find_cart_product
+
+        cart_products = CartProduct.objects.create(
+            cart=cart[0], product=product, amount=amount
+        )
+        return cart_products
