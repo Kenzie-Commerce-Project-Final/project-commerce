@@ -1,5 +1,9 @@
-import django
-from rest_framework.generics import ListAPIView, CreateAPIView, DestroyAPIView
+from rest_framework.generics import (
+    ListAPIView,
+    CreateAPIView,
+    UpdateAPIView,
+    DestroyAPIView,
+)
 from rest_framework.permissions import IsAuthenticated
 from carts.models import Cart, Status
 from carts.serializers import CartSerializer, CartProductSerializer
@@ -23,3 +27,8 @@ class CartViewProduct(CreateAPIView):
 
     def perform_create(self, serializer):
         return serializer.save(user=self.request.user)
+
+
+class CartViewProductById(UpdateAPIView, DestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = CartSerializer
