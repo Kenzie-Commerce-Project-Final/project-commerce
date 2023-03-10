@@ -26,9 +26,24 @@ class CartSerializer(serializers.ModelSerializer):
             "created_at",
             "user_id",
         ]
+        extra_kwargs = {
+            "status": {
+                "error_messages": {
+                    "invalid_choice": f"status needs to be '{Status.IN_PROGRESS}' or '{Status.DONE}'"
+                },
+            }
+        }
 
     def create(self, validated_data: dict) -> Cart:
         return Cart.objects.create(**validated_data)
+
+    def update(self, instance: Cart, validated_data: dict) -> Cart:
+        status = validated_data.get("status", None)
+        if not status:
+            raise validators.ValidationError({"status": "is required field."})
+        setattr(instance, "status", status)
+        instance.save()
+        return instance
 
 
 class CartProductSerializer(serializers.ModelSerializer):
