@@ -48,7 +48,7 @@ DJANGO_APPS = [
 
 THIRD_PARTY_APPS = [
     "rest_framework",
-    # "drf_spectacular",
+    "drf_spectacular",
 ]
 
 MY_APPS = [
@@ -170,8 +170,15 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "users.User"
 
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Kenzie-Commerce",
+    "DESCRIPTION": "Back-End web develop e-commerce project from Kenzie Academy Brazil, using generic views on Django, JWT as authentication on routes and postgreeSQL as database. This project can register customers and suppliers with their products, allowing the customer to add products in cart and place orders. All support to ensure the visualization and purchase of available products, update of products, registration of addresses, sending emails with the information of orders and the connection of suppliers to orders was implemented in our application.",
+    "VERSION": "1.0.0",
+}
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema"
 }
