@@ -17,9 +17,7 @@ class Cart(models.Model):
         max_length=50, choices=Status.choices, default=Status.PENDING
     )
     crated_at = models.DateTimeField(auto_now_add=True)
-    carts_products = models.ManyToManyField(
-        "products.Product", through="carts.CartProduct"
-    )
+    products = models.ManyToManyField("products.Product", through="carts.CartProduct")
     user = models.ForeignKey(
         "users.User",
         on_delete=models.CASCADE,
