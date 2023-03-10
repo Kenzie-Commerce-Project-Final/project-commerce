@@ -4,13 +4,14 @@ from rest_framework.generics import (
     UpdateAPIView,
     DestroyAPIView,
 )
-from rest_framework.views import APIView, Request, Response, status
+from rest_framework.views import APIView, Response, status
 from rest_framework.permissions import IsAuthenticated
 from carts.models import Cart, CartProduct, Status
 from carts.serializers import CartSerializer, CartProductSerializer
 from utils.cart.count_items import count_items
 from utils.cart.sum_total_price import sum_total_price
 from rest_framework.validators import ValidationError
+from carts.permissions import IsSeller
 
 
 class CartView(ListAPIView):
@@ -90,3 +91,19 @@ class CartViewCheckout(APIView):
             cart.status = Status.REQUEST_MADE
             cart.save()
         return Response({"message": "Order placed."}, status.HTTP_201_CREATED)
+
+
+class CartOrderView(ListAPIView):
+    permission_classes = [IsAuthenticated, IsSeller]
+    serializer_class = CartSerializer
+
+    def get_queryset(self):
+        return Cart.objects.filter(
+            products__user_id=self.request.user, status=Status.REQUEST_MADE
+        )
+
+
+class CartOrderViewId(UpdateAPIView):
+    permission_classes = [IsAuthenticated, IsSeller]
+    queryset = Cart.objects.all()
+    serializer_class = CartSerializer
