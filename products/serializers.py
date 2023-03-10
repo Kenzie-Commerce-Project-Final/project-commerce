@@ -13,6 +13,12 @@ class ProductSerializer(serializers.ModelSerializer):
         return Product.objects.create(**data)
 
     def update(self, instance: Product, validated_data: dict) -> Product:
+
+        if validated_data["stock"] == 0:
+            validated_data.update({"is_available": False})
+        elif validated_data["stock"] != 0:
+            validated_data.update({"is_available": True})
+
         for key, value in validated_data.items():
             setattr(instance, key, value)
 

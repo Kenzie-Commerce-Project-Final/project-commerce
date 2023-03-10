@@ -1,7 +1,7 @@
 from .models import Product
 from .serializers import ProductSerializer
 from rest_framework import generics
-from .permissions import MyCustomPermissions
+from .permissions import MyCustomPermissions, IsOwnerOrSuperUser
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
@@ -32,7 +32,7 @@ class ProductView(generics.ListCreateAPIView):
 
 
 class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [MyCustomPermissions]
+    permission_classes = [IsOwnerOrSuperUser]
 
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
@@ -40,6 +40,7 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_destroy(self, instance):
         product = get_object_or_404(Product, id=instance.id)
+        self.check_object_permissions(self.request, product)
 
         if product:
             instance.is_available = False
