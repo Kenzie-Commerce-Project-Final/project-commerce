@@ -7,6 +7,9 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from .permissions import IsAdmOrUserCommon
 from products.models import Product
 from products.serializers import ProductSerializer
+from carts.models import Cart, Status
+from carts.serializers import CartSerializer
+from django.shortcuts import get_object_or_404
 
 # Create your views here.
 
@@ -17,7 +20,6 @@ class UserView(generics.CreateAPIView):
 
 
 class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAdmOrUserCommon]
 
     queryset = User.objects.all()
@@ -25,8 +27,6 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class SellerProductsView(generics.ListAPIView):
-    authentication_classes = [JWTAuthentication]
-
     queryset = Product.objects.none()
     http_method_names = ["get"]
 
@@ -34,3 +34,17 @@ class SellerProductsView(generics.ListAPIView):
         products = Product.objects.filter(user_id=pk)
         serializer = ProductSerializer(products, many=True)
         return Response(serializer.data)
+
+
+class PurchaseHistoryView(generics.ListAPIView):
+    permission_classes = [IsAdmOrUserCommon]
+    serializer_class = CartSerializer
+
+    def get_queryset(self):
+        user = get_object_or_404(User, id=self.kwargs["pk"])
+        self.check_object_permissions(self.request, user)
+
+        return Cart.objects.filter(
+            user_id=self.kwargs["pk"],
+            status__in=[Status.DONE, Status.IN_PROGRESS, Status.REQUEST_MADE],
+        )
