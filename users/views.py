@@ -3,8 +3,7 @@ from rest_framework import generics
 from rest_framework.views import Response
 from .models import User
 from .serializers import UserSerializer
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from .permissions import IsAdmOrUserCommon
+from .permissions import IsAdmOrUserCommon, IsAdmToReadUsers
 from products.models import Product
 from products.serializers import ProductSerializer
 from carts.models import Cart, Status
@@ -14,7 +13,9 @@ from django.shortcuts import get_object_or_404
 # Create your views here.
 
 
-class UserView(generics.CreateAPIView):
+class UserView(generics.ListCreateAPIView):
+    permission_classes = [IsAdmToReadUsers]
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
