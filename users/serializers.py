@@ -13,7 +13,6 @@ class UserSerializer(serializers.ModelSerializer):
             if key == "password":
                 instance.set_password(value)
             setattr(instance, key, value)
-        instance.password = make_password(instance.password)
         instance.save()
 
         return instance
