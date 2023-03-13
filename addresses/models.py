@@ -9,7 +9,7 @@ class Address(models.Model):
     street = models.CharField(max_length=127)
     district = models.CharField(max_length=127)
     number = models.IntegerField()
-    complement = models.TextField(max_length=300)
+    complement = models.TextField(max_length=300, null=True)
     user = models.OneToOneField(
         "users.User",
         on_delete=models.CASCADE,
