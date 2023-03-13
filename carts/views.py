@@ -20,9 +20,6 @@ class CartView(ListAPIView):
     serializer_class = CartSerializer
 
     def get_queryset(self):
-        if self.request.user.is_superuser:
-            return Cart.objects.all()
-
         return Cart.objects.filter(user=self.request.user, status=Status.PENDING)
 
 
