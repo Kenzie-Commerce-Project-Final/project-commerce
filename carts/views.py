@@ -68,9 +68,15 @@ class CartViewCheckout(APIView):
     def post(self, request):
         user = request.user
         carts = Cart.objects.filter(user=user, status=Status.PENDING)
+
+        if not carts:
+            return Response(
+                {"message": "User does not have open carts."},
+                status.HTTP_400_BAD_REQUEST,
+            )
+
         for cart in carts:
             carts_products = CartProduct.objects.filter(cart=cart)
-
             for cart_product in carts_products:
                 if not cart_product.product.is_available:
                     raise ValidationError("Product is not available.")
