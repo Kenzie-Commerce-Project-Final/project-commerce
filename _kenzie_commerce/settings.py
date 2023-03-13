@@ -33,7 +33,10 @@ SECRET_KEY = os.getenv("SECRET_KEY", get_random_secret_key())
 DEBUG = os.getenv("DEBUG", False)
 
 ALLOWED_HOSTS = []
+RAILWAY_STATIC_URL = os.getenv("RAILWAY_STATIC_URL")
 
+if RAILWAY_STATIC_URL:
+    ALLOWED_HOSTS += [RAILWAY_STATIC_URL, "0.0.0.0"]
 
 # Application definition
 
@@ -115,7 +118,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
     production_db = dj_database_url.config(default=DATABASE_URL)
-    DATABASES.update(production_db)
+    DATABASES["default"].update(production_db)
     DEBUG = False
 
 if not DEBUG:
