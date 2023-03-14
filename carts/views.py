@@ -12,6 +12,8 @@ from utils.cart.count_items import count_items
 from utils.cart.sum_total_price import sum_total_price
 from rest_framework.validators import ValidationError
 from carts.permissions import IsSeller
+from django.core.mail import send_mail
+from django.conf import settings
 
 
 class CartView(ListAPIView):
@@ -68,14 +70,29 @@ class CartViewCheckout(APIView):
     def post(self, request):
         user = request.user
         carts = Cart.objects.filter(user=user, status=Status.PENDING)
+
+        if not carts:
+            return Response(
+                {"message": "User does not have open carts."},
+                status.HTTP_400_BAD_REQUEST,
+            )
+
         for cart in carts:
             carts_products = CartProduct.objects.filter(cart=cart)
-
+            products_list = [f"Produto: {product.product.name} - Quantidade: {product.amount}" for product in carts_products]
+            back_slash = "\n"
+            send_mail(
+                subject='Pedido realizado',
+                message=f'Um pedido foi realizado pelo usuário {cart.user.first_name}.\nSegue abaixo detalhes do pedido:\n\n{back_slash.join(products_list)}',
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[cart.products.first().user.email],
+                fail_silently=False
+            )
             for cart_product in carts_products:
                 if not cart_product.product.is_available:
                     raise ValidationError("Product is not available.")
 
-                if cart_product.product.stock <= cart_product.amount:
+                if cart_product.product.stock < cart_product.amount:
                     raise ValidationError(
                         f"Product quantity exceeded inventory, inventory available {cart_product.product.stock}."
                     )
