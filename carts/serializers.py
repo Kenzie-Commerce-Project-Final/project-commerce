@@ -5,6 +5,8 @@ from django.shortcuts import get_object_or_404
 from utils.cart.count_items import count_items
 from utils.cart.sum_total_price import sum_total_price
 from products.serializers import ProductOnCartSerializer
+from django.core.mail import send_mail
+from django.conf import settings
 
 
 class CartSerializer(serializers.ModelSerializer):
@@ -43,6 +45,13 @@ class CartSerializer(serializers.ModelSerializer):
             raise validators.ValidationError({"status": "is required field."})
         setattr(instance, "status", status)
         instance.save()
+        send_mail(
+            subject='Status do pedido alterado',
+            message=f'O seu pedido realizado da empresa {instance.products.first().user.first_name} foi alterado para {instance.status}.',
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[instance.user.email],
+            fail_silently=False
+        )
         return instance
 
 
