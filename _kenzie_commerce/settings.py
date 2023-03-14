@@ -32,8 +32,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", get_random_secret_key())
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", False)
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ["k-commerce.up.railway.app", "0.0.0.0", "127.0.0.1"]
 
 # Application definition
 
@@ -115,7 +114,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
     production_db = dj_database_url.config(default=DATABASE_URL)
-    DATABASES.update(production_db)
+    DATABASES["default"].update(production_db)
     DEBUG = False
 
 if not DEBUG:
