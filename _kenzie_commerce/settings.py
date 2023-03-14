@@ -32,7 +32,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", get_random_secret_key())
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", False)
 
-ALLOWED_HOSTS = ["k-commerce.up.railway.app", "localhost"]
+ALLOWED_HOSTS = ["k-commerce.up.railway.app", "0.0.0.0", "127.0.0.1"]
 
 # Application definition
 
